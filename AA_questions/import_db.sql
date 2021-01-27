@@ -1,6 +1,8 @@
-
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS question_follows;
+DROP TABLE IF EXISTS replies;
 PRAGMA foreign_keys = ON;
-
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
     fname TEXT NOT NULL, 
@@ -26,16 +28,16 @@ INSERT INTO
     questions (title, body, users_id)
 VALUES 
     (
-        (SELECT fname AS name FROM users WHERE fname = "yohan"),
+        (SELECT 'yohans question' FROM users WHERE fname = "yohan"),
         ("questions number 1"),
-        (SELECT id AS users_id FROM users WHERE fname = 'yohan')
+        (SELECT id FROM users WHERE fname = 'yohan')
 
     ),
     
         (
-        (SELECT fname AS name FROM users WHERE fname = "dan"),
+        (SELECT 'dans question' FROM users WHERE fname = "dan"),
         ("questions number 2"),
-        (SELECT id AS users_id FROM users WHERE fname = "dan")
+        (SELECT id FROM users WHERE fname = "dan")
 
     );
 
@@ -49,12 +51,59 @@ CREATE TABLE question_follows (
     FOREIGN KEY (questions_id) REFERENCES questions(id)
 );
 
--- INSERT INTO 
---     questions_follows (users_id, quesetions_id)
--- VALUES 
---     (
---         SELECT * FROM users
---         SELECT  FROM 
+INSERT INTO 
+    question_follows (users_id, questions_id)
+VALUES 
+    (
+       (SELECT id FROM users WHERE fname = "yohan"),
+       (SELECT id FROM questions WHERE title = "yohans question")
 
---     )
+    ),
+    (
+    
+        (SELECT id FROM users WHERE fname = "dan"),
+       (SELECT id FROM questions WHERE title = "dans question")
+        
+    );
 
+    CREATE TABLE replies(
+        id INTEGER PRIMARY KEY,
+        questions_id INTEGER NOT NULL, 
+        parent_reply_id INTEGER, 
+        users_id INTEGER NOT NULL,
+        body TEXT NOT NULL,
+
+        FOREIGN KEY (questions_id) REFERENCES questions(id)
+        FOREIGN KEY (parent_reply_id) REFERENCES replies(id)
+        FOREIGN KEY (users_id) REFERENCES users(id)
+    );
+
+    INSERT INTO 
+        replies (questions_id, users_id, body)
+    VALUES
+        (
+            (SELECT id FROM questions WHERE title = "yohans question"),
+            (SELECT id FROM users WHERE fname = "yohan"),
+            ("Reply 1")
+
+
+        );
+
+    INSERT INTO 
+        replies (questions_id, parent_reply_id, users_id, body)
+    VALUES
+    (
+        (SELECT id FROM questions WHERE title = "yohans question"),
+        (SELECT id FROM replies WHERE body = "Reply 1"),
+        (Select id FROM users WHERE fname = "dan"),
+        ("Reply child")
+    );
+    INSERT INTO 
+        replies (questions_id, parent_reply_id, users_id, body)
+    VALUES
+    (
+        (SELECT id FROM questions WHERE title = "yohans question"),
+        (SELECT id FROM replies WHERE body = "Reply child"),
+        (Select id FROM users WHERE fname = "random"),
+        ("Reply child child")
+    );
